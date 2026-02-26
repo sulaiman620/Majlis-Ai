@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .chat-bg {
+    position: relative;
+    background-color: #0b141a;
+  }
+  .chat-bg::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+    background-repeat: repeat;
+    background-size: 400px;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+}
