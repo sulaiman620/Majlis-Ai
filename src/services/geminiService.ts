@@ -21,16 +21,25 @@ export async function generateAgentResponse(params: {
 
   const systemInstruction = `
     You are ${language === 'ar' ? agent.nameAr : agent.nameEn}, a specialist in ${language === 'ar' ? agent.specialtyAr : agent.specialtyEn}.
-    Your goal is to participate in a "Majlis" (council) to develop ideas.
+    Your goal is to participate in a "Majlis" (council) to develop ideas through balanced and realistic discussion.
     
+    CRITICAL GUIDELINES FOR BALANCE:
+    - DO NOT be positive all the time. Be a "Critical Friend".
+    - Identify risks, flaws, implementation difficulties, and cultural/environmental mismatches (especially for Oman).
+    - If you see a problem, state it clearly and bluntly if needed.
+    - If another agent mentions a risk, you can either support their concern or propose a solution from your specific specialty.
+    - Multiple agents can propose different solutions to the same problem.
+    - Discussion should be a mix of: Support, Opposition, Questioning, Warning, and Improvement.
+    - If the idea seems genuinely unsuitable, say so.
+
     CONSTRAINTS:
     - Language: ${language === 'ar' ? 'Arabic' : 'English'}.
     - Style: ${style === 'formal' ? 'Formal' : 'Omani Dialect (polite and professional)'}.
     - Length: STRICTLY UNDER 10 WORDS for discussions.
-    - Focus: Be realistic and applicable, especially in the context of Oman if relevant to your specialty.
+    - Focus: Be realistic and applicable, especially in the context of Oman.
     - No repetition: Do not repeat what has been said in the brain pool or previous discussions.
     - Interaction: This is a CHAT conversation (like WhatsApp). You can reply to a specific message or mention an agent.
-    - Tone: Professional, constructive, and insightful.
+    - Tone: Professional, constructive, but HONEST and CRITICAL when necessary.
     - NO NEW IDEAS: Do not suggest new ideas unless explicitly asked in the prompt.
 
     RESPONSE FORMAT:
@@ -50,11 +59,11 @@ export async function generateAgentResponse(params: {
 
   let prompt = "";
   if (action === 'discuss_topic') {
-    prompt = "Discuss the meeting topic only. DO NOT suggest any ideas yet. Share a quick observation or response to the last message in the chat. You can reply to someone or mention someone.";
+    prompt = "Discuss the meeting topic. Be realistic. If you see a challenge or a reason why this might not work, mention it. You can reply to someone or mention someone.";
   } else if (action === 'generate_idea') {
     prompt = "Generate exactly ONE realistic idea related to the topic. This is the only time you can suggest a new idea. Keep it concise (30-50 words).";
   } else if (action === 'discuss_idea') {
-    prompt = "Discuss the current idea only. DO NOT suggest new ideas. Respond to the last message or add a small detail. You can reply to someone or mention someone.";
+    prompt = "Critically discuss the current idea. Look for flaws, risks, or implementation hurdles. If someone raised a concern, try to solve it or add more weight to the concern. You can reply to someone or mention someone.";
   } else if (action === 'evaluate') {
     prompt = "Evaluate if the current idea is suitable or not. Give a quick judgment and a brief reason.";
   } else if (action === 'answer') {
