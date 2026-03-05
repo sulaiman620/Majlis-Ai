@@ -7,6 +7,23 @@ html, body, #root {
   padding: 0;
 }
 
+/* Base responsive rules */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure touch targets are at least 44px on mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 40px;
+  }
+}
+
 @layer utilities {
   .chat-bg {
     position: relative;
@@ -24,5 +41,42 @@ html, body, #root {
     background-size: 400px;
     opacity: 0.06;
     pointer-events: none;
+  }
+
+  /* Mobile sidebar overlay */
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 45;
+    backdrop-filter: blur(2px);
+  }
+
+  .sidebar-mobile {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    width: 85%;
+    max-width: 360px;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .sidebar-mobile.rtl {
+    right: 0;
+    transform: translateX(100%);
+  }
+
+  .sidebar-mobile.ltr {
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  .sidebar-mobile.open.rtl {
+    transform: translateX(0);
+  }
+
+  .sidebar-mobile.open.ltr {
+    transform: translateX(0);
   }
 }

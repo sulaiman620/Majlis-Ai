@@ -5,7 +5,7 @@ import {
   Users, Wallet, Handshake, CloudSun, Truck, Factory, Target,
   Plus, Send, Play, Square, RefreshCw, X, ChevronRight, ChevronLeft,
   MessageSquare, Brain, Info, CheckCircle2, AlertCircle, Download, Copy,
-  Star, Globe, Languages, MessageCircle
+  Star, Globe, Languages, MessageCircle, Menu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
@@ -58,6 +58,7 @@ export default function App() {
   const [replyingTo, setReplyingTo] = useState<{ agentId: number, text: string } | null>(null);
   const [discussionStatus, setDiscussionStatus] = useState<'discussing' | 'agreed' | 'weak'>('discussing');
   const [showMentionList, setShowMentionList] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mentionFilter, setMentionFilter] = useState("");
   const userInputRef = useRef<HTMLInputElement>(null);
   const brainPoolRef = useRef<HTMLDivElement>(null);
@@ -842,15 +843,22 @@ export default function App() {
   return (
     <div className={cn("h-screen bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden", isRTL ? "rtl" : "ltr")}>
       {/* Header */}
-      <header className="flex-none bg-slate-900/80 backdrop-blur-md border-b border-slate-800 p-3 sticky top-0 z-40 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-            <Brain className="w-6 h-6 text-white" />
+      <header className="flex-none bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-3 py-2 sm:p-3 sticky top-0 z-40 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile sidebar toggle */}
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden p-2 hover:bg-slate-800 rounded-full transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
+            <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <h1 className="text-lg font-bold hidden sm:block">{t.title}</h1>
+          <h1 className="text-base sm:text-lg font-bold hidden sm:block">{t.title}</h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button 
             onClick={() => setShowSettings(!showSettings)}
             className="p-2 hover:bg-slate-800 rounded-full transition-colors"
@@ -859,23 +867,46 @@ export default function App() {
           </button>
           <button 
             onClick={handleEndMeeting}
-            className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-all"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all"
           >
             {t.endMeeting}
           </button>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div 
+            className="sidebar-overlay lg:hidden" 
+            onClick={() => setSidebarOpen(false)} 
+          />
+        )}
+
         {/* Left Sidebar: Brain Pool */}
-        <aside className="w-full lg:w-80 bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col flex-none box-border">
+        <aside className={cn(
+          "bg-slate-900 flex flex-col flex-none box-border",
+          // Desktop: normal sidebar
+          "hidden lg:flex lg:w-80 lg:border-r border-slate-800",
+          // Mobile: drawer overlay
+          sidebarOpen && "flex! sidebar-mobile open",
+          !sidebarOpen && "sidebar-mobile",
+          isRTL ? "rtl" : "ltr"
+        )}>
           <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-900">
             <h2 className="font-bold text-sm flex items-center gap-2">
               <Brain className="w-4 h-4 text-emerald-400" /> {t.brainPool}
             </h2>
+            {/* Close button for mobile sidebar */}
+            <button 
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-1.5 hover:bg-slate-800 rounded-full transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
           
-          <div ref={brainPoolRef} className="overflow-y-auto overflow-x-hidden p-3 space-y-3 h-[35vh]">
+          <div ref={brainPoolRef} className="overflow-y-auto overflow-x-hidden p-3 space-y-3 flex-1 lg:h-auto lg:max-h-[35vh]">
             {brainPool.length === 0 ? (
               <div className="text-slate-500 text-center py-8">
                 <Info className="w-8 h-8 mx-auto mb-2 opacity-20" />
@@ -929,7 +960,7 @@ export default function App() {
                 {!topic ? (
                   <>
                     <button 
-                      onClick={handleSetTopic}
+                      onClick={() => { handleSetTopic(); setSidebarOpen(false); }}
                       disabled={!topicInput.trim() || isThinking}
                       className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1"
                     >
@@ -968,7 +999,7 @@ export default function App() {
                 </span>
               )}
             </div>
-            <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-2 w-full max-w-full">
+            <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-1.5 sm:gap-2 w-full max-w-full">
               {AGENTS.map((agent) => {
                 const isSelected = selectedAgentIds.includes(agent.id);
                 const isActive = discussions.length > 0 && discussions[discussions.length - 1].agentId === agent.id;
@@ -986,8 +1017,8 @@ export default function App() {
                       isActive && "border-emerald-500 shadow-lg shadow-emerald-500/20"
                     )}
                   >
-                    <Icon className={cn("w-6 h-6 mb-1", isSelected ? "text-emerald-400" : "text-slate-600")} />
-                    <span className="text-[8px] text-center font-medium px-1 truncate w-full">
+                    <Icon className={cn("w-4 h-4 sm:w-6 sm:h-6 mb-1", isSelected ? "text-emerald-400" : "text-slate-600")} />
+                    <span className="text-[7px] sm:text-[8px] text-center font-medium px-0.5 sm:px-1 truncate w-full">
                       {language === 'ar' ? agent.nameAr : agent.nameEn}
                     </span>
                     {isActive && (
@@ -1027,7 +1058,7 @@ export default function App() {
             )}
             <div 
               ref={scrollRef}
-              className="h-[45vh] overflow-y-auto overflow-x-hidden p-4 scroll-smooth chat-bg relative"
+              className="flex-1 min-h-[30vh] max-h-[50vh] sm:max-h-[45vh] overflow-y-auto overflow-x-hidden p-2 sm:p-4 scroll-smooth chat-bg relative"
             >
               <div className="relative z-10 space-y-4 pb-4">
                 {discussions.length === 0 ? (
@@ -1077,8 +1108,8 @@ export default function App() {
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         className={cn(
-                          "flex items-start gap-2 mb-1",
-                          isUserMsg ? "ml-auto max-w-[70%] flex-row-reverse" : "mr-auto max-w-[70%]"
+                          "flex items-start gap-1.5 sm:gap-2 mb-1",
+                          isUserMsg ? "ml-auto max-w-[90%] sm:max-w-[70%] flex-row-reverse" : "mr-auto max-w-[90%] sm:max-w-[70%]"
                         )}
                       >
                         {/* Agent Avatar (only for agent messages) */}
@@ -1274,8 +1305,8 @@ export default function App() {
           </div>
 
           {/* Controls */}
-          <div className="flex-none p-4 bg-slate-900 border-t border-slate-800 sticky bottom-0 z-30">
-              <div className="max-w-4xl mx-auto flex flex-col gap-4">
+          <div className="flex-none p-2 sm:p-4 bg-slate-900 border-t border-slate-800 sticky bottom-0 z-30">
+              <div className="max-w-4xl mx-auto flex flex-col gap-2 sm:gap-4">
                 {/* Phase 2: Idea Display */}
                 {phase === 'idea_generation' && generatedIdea && (
                   <motion.div 
@@ -1293,12 +1324,12 @@ export default function App() {
                   </motion.div>
                 )}
 
-                <div className="flex flex-wrap gap-3 items-center justify-center">
+                <div className="flex flex-wrap gap-2 sm:gap-3 items-center justify-center">
                   {topic && (
                     <>
                       {/* Discussion Focus Badge & Button */}
                       {(phase === 'topic_discussion' || phase === 'idea_discussion') && (
-                        <div className="w-full flex items-center justify-center gap-2 mb-1">
+                        <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-2 mb-1">
                           <div className={cn(
                             "flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold border transition-all",
                             focusDimensionId
@@ -1338,7 +1369,7 @@ export default function App() {
                                 <X className="w-4 h-4" />
                               </button>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                            <div className="grid grid-cols-2 gap-1.5">
                               {/* Auto/No Focus option */}
                               <button
                                 onClick={() => { setFocusDimensionId(null); setShowFocusSelector(false); }}
@@ -1387,17 +1418,17 @@ export default function App() {
                           <button 
                             onClick={handleContinueDiscussion}
                             disabled={isThinking || isAutoPlaying || isMeetingEnded}
-                            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 font-bold rounded-2xl transition-all flex items-center gap-2"
+                            className="px-4 py-2 sm:px-6 sm:py-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 text-xs sm:text-sm font-bold rounded-2xl transition-all flex items-center gap-2"
                           >
-                            <RefreshCw className={cn("w-5 h-5", isThinking && "animate-spin")} />
+                            <RefreshCw className={cn("w-4 h-4 sm:w-5 sm:h-5", isThinking && "animate-spin")} />
                             {t.continueDiscussion}
                           </button>
                           <button 
                             onClick={handleGenerateIdea}
                             disabled={isThinking || isMeetingEnded}
-                            className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+                            className="px-4 py-2 sm:px-6 sm:py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
                           >
-                            <CheckCircle2 className="w-5 h-5" /> {t.agreedOnTopic}
+                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" /> {t.agreedOnTopic}
                           </button>
                         </>
                       )}
@@ -1408,17 +1439,17 @@ export default function App() {
                           <button 
                             onClick={handleContinueDiscussion}
                             disabled={isThinking || isAutoPlaying || isMeetingEnded}
-                            className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+                            className="px-4 py-2 sm:px-6 sm:py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
                           >
-                            <RefreshCw className={cn("w-5 h-5", isThinking && "animate-spin")} />
+                            <RefreshCw className={cn("w-4 h-4 sm:w-5 sm:h-5", isThinking && "animate-spin")} />
                             {t.continueDiscussion}
                           </button>
                           <button 
                             onClick={handleGenerateIdea}
                             disabled={isThinking || isMeetingEnded}
-                            className="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
+                            className="px-4 py-2 sm:px-6 sm:py-3 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
                           >
-                            <ChevronRight className="w-5 h-5" /> {t.moveToNewIdea}
+                            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" /> {t.moveToNewIdea}
                           </button>
                         </>
                       )}
@@ -1436,11 +1467,11 @@ export default function App() {
                           }}
                           disabled={isMeetingEnded}
                           className={cn(
-                            "px-6 py-3 font-bold rounded-2xl transition-all flex items-center gap-2 disabled:opacity-50",
+                            "px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-bold rounded-2xl transition-all flex items-center gap-2 disabled:opacity-50",
                             isAutoPlaying ? "bg-rose-500 hover:bg-rose-600 text-white" : "bg-slate-800 hover:bg-slate-700 text-slate-300"
                           )}
                         >
-                          {isAutoPlaying ? <Square className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                          {isAutoPlaying ? <Square className="w-4 h-4 sm:w-5 sm:h-5" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5" />}
                           {isAutoPlaying ? t.stopDiscussion : t.startAuto}
                         </button>
                       )}
@@ -1460,7 +1491,7 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-700"
+              className="bg-slate-800 rounded-2xl sm:rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-700"
             >
               <div className="bg-emerald-500 p-6 flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -1527,7 +1558,7 @@ export default function App() {
             <motion.div 
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-800"
+              className="bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl border border-slate-800"
             >
               <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                 <h2 className="text-2xl font-bold flex items-center gap-3">
@@ -1562,7 +1593,7 @@ export default function App() {
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <Star className="w-6 h-6 text-amber-400" /> {t.feedback}
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {AGENTS.filter(a => selectedAgentIds.includes(a.id)).map(agent => (
                       <div key={agent.id} className="bg-slate-800 p-4 rounded-2xl border border-slate-700">
                         <div className="flex items-center gap-3 mb-3">
@@ -1635,7 +1666,7 @@ export default function App() {
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-slate-800 rounded-3xl w-full max-w-md p-8 shadow-2xl border border-slate-700"
+              className="bg-slate-800 rounded-2xl sm:rounded-3xl w-full max-w-md p-5 sm:p-8 shadow-2xl border border-slate-700"
             >
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-xl font-bold">{t.setup}</h2>
